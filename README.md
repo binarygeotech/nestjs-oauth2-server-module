@@ -162,11 +162,76 @@ export class TestSecuredController {
     }
 }
 ```
+You can now add the `entities` option to your app root module
+
+```typescript
+//app.module.ts
+import { Module } from '@nestjs/common';
+import { OAuth2Module } from '@switchit/nestjs-oauth2-server';
+
+@Module({
+    imports: [
+        OAuth2Module.forRoot({
+            userLoader: new UserLoader(),
+            userValidator: new UserValidator(),
+            entities: [
+              ClientEntity,
+              AccessTokenEntity,
+            ],
+        }),
+    ],
+})
+export class AppModule {}
+```
+
+Also for async
+```typescript
+@Module({
+    imports: [
+        OAuth2Module.forRootAsync({
+            useFactory: () => ({
+                userLoader: new UserLoader(),
+                userValidator: new UserValidator(),
+                entities: [
+                  ClientEntity,
+                  AccessTokenEntity,
+                ],
+            })
+        }),
+    ],
+})
+```
+
+## Using custom entities
+
+**OPTIONAL**: You can also use custom `entities` either by extending from the on that comes with the module or create a new entity that conforms with the module's entities.
+e.g
+```typescript
+...
+import { ClientEntity as OClientEntity } from '@switchit/nestjs-oauth2-server/dist/domain/client.entity';
+
+@Entity('...')
+@Unique(['client_id'])
+export class ClientEntity extends OClientEntity {
+  ...
+}
+```
+
+```typescript
+...
+import { ClientEntity } from './client.entity'; // Use your client entity here
+import { AccessTokenEntity as OAccessTokenEntity } from '@switchit/nestjs-oauth2-server/dist/domain/access-token.entity';
+
+@Entity('...')
+export class AccessTokenEntity extends OAccessTokenEntity {
+  ...
+}
+```
 
 ## Adding the entities to your TypeORM configuration
 
 **IMPORTANT**: The module comes with entities you have to add the configuration `node_modules/@switchit/**/*.entity.js`
-to let typeorm scan your entities or add them to the `entitie` configuration variable in TypeORM.
+to let typeorm scan your entities or add them to the `entities` configuration variable in TypeORM.
 
 ## Using the global validation pipes
 
